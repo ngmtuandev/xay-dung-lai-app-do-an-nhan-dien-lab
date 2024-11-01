@@ -1,5 +1,7 @@
-import Loader from "./loader/index"
+import Loader from "./loader/index";
+import BoxItemLabActive from "./BoxItemLabActive";
 
 export {
-    Loader
+    Loader,
+    BoxItemLabActive
 }

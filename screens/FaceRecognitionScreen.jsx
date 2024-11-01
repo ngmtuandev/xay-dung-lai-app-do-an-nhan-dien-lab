@@ -18,14 +18,14 @@ export default function FaceRecognitionScreen() {
     if (!permission.granted) {
         return (
             <View style={styles.container}>
-                <Text style={styles.message}>We need your permission to show the camera</Text>
-                <Button onPress={requestPermission} title="Grant Permission" />
+                <Text style={styles.message}>Để vào phòng thí nhiệm, chúng mình cần xác thực khuôn mặt. Vì vậy hãy bật quyền truy cập máy ảnh nhé !</Text>
+                <Button onPress={requestPermission} title="Cho phép truy cập" />
             </View>
         );
     }
 
     function toggleCameraFacing() {
-        setFacing(current => (current === 'back' ? 'front' : 'back'));
+        setFacing(current => (current === 'Sau' ? 'Trước' : 'Sau'));
     }
 
     function startAnimation() {
@@ -57,11 +57,11 @@ export default function FaceRecognitionScreen() {
                 <View style={styles.faceOutline}>
                     <Animated.View style={[styles.scanner, { transform: [{ translateY }] }]} />
                 </View>
-                <View style={styles.buttonContainer}>
+                {/* <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-                        <Text style={styles.text}>Flip Camera</Text>
+                        <Text style={styles.text}>Lật </Text>
                     </TouchableOpacity>
-                </View>
+                </View> */}
             </CameraView>
         </View>
     );

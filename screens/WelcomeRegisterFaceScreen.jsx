@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { routers } from '../navigate/routers';
 import img_logo from "../assets/images/img-login.png"
 
-const WelcomeScreen = ({ navigation }) => {
+const WelcomeRegisterFaceScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <View style={styles.faceContainer}>
@@ -21,7 +21,7 @@ const WelcomeScreen = ({ navigation }) => {
     );
 };
 
-export default WelcomeScreen;
+export default WelcomeRegisterFaceScreen;
 
 const styles = StyleSheet.create({
     container: {

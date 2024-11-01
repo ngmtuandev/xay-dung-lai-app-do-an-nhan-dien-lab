@@ -17,10 +17,10 @@ const HomeScreen = ({ navigation }) => {
 
                 {/* Categories Section */}
                 <View style={styles.section}>
-                    <TouchableOpacity onPress={() => navigation.navigate(routers.WELCOME)} style={[styles.membershipCard, { backgroundColor: '#FFE9E5' }]}>
-                        <Text style={styles.planTitle}>THỰC HIỆN XÁC MINH</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate(routers.OVERALL_ACTIVE)} style={[styles.membershipCard, { backgroundColor: '#FFE9E5' }]}>
+                        <Text style={styles.planTitle}>TỔNG QUAN PHÒNG</Text>
                         <TouchableOpacity style={styles.tryNowButton}>
-                            <Text style={styles.tryNowButtonText}>XÁC MINH</Text>
+                            <Text style={styles.tryNowButtonText}>XEM</Text>
                         </TouchableOpacity>
                     </TouchableOpacity>
 
@@ -30,6 +30,22 @@ const HomeScreen = ({ navigation }) => {
                             <Text style={styles.tryNowButtonText}>XEM</Text>
                         </TouchableOpacity>
                     </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => navigation.navigate(routers.REGISTER_FACE)} style={[styles.membershipCard, { backgroundColor: '#c1ffd2' }]}>
+                        <Text style={styles.planTitle}>ĐĂNG KÍ THÔNG TIN</Text>
+                        <TouchableOpacity style={styles.tryNowButton}>
+                            <Text style={styles.tryNowButtonText}>ĐĂNG KÍ</Text>
+                        </TouchableOpacity>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => navigation.navigate(routers.WELCOME)} style={[styles.membershipCard, { backgroundColor: '#FFE9E5' }]}>
+                        <Text style={styles.planTitle}>ĐĂNG KÍ KHUÔN MẶT</Text>
+                        <TouchableOpacity style={styles.tryNowButton}>
+                            <Text style={styles.tryNowButtonText}>ĐĂNG KÍ</Text>
+                        </TouchableOpacity>
+                    </TouchableOpacity>
+
+                    
 
                 </View>
 
@@ -58,7 +74,7 @@ const HomeScreen = ({ navigation }) => {
             </ScrollView>
 
             {/* Bottom Navigation with Centered Floating Button */}
-            <View style={styles.bottomNavContainer}>
+            {/* <View style={styles.bottomNavContainer}>
                 <View style={styles.bottomNav}>
                     <TouchableOpacity>
                         <Image style={styles.navIcon} />
@@ -76,7 +92,7 @@ const HomeScreen = ({ navigation }) => {
                 <TouchableOpacity style={styles.floatingButton}>
                     <Text style={styles.floatingButtonText}>+</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
         </View>
     );
 };
