@@ -60,17 +60,15 @@ const BoxItemLabActive = ({ isActive, data, flag, setFlag }) => {
       //   });
       return;
     } else {
-      if (infoActiveOfLab == undefined) {
+      if (!infoActiveOfLab) {
         setModalVisible(!isModalVisible);
-      }
-      if (infoActiveOfLab?.userName == user?.userName) {
+      } else if (infoActiveOfLab.userName === user?.userName) {
         setModalVisible(!isModalVisible);
       } else {
         showMessage({
           message: "Phòng đã có ca làm!",
           type: "warning",
         });
-        return;
       }
     }
   };

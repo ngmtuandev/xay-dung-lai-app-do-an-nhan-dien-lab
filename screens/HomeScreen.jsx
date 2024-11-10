@@ -1,263 +1,357 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Image } from "react-native";
-import { routers } from "../navigate/routers";
-import face from "../assets/images/face.png"
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useDispatch, useSelector } from "react-redux";
+import axiosInstance from "../config/axiosConfig";
+import getCurrentDate from "../helper/getCurrentDate";
+import getCurrentTime from "../helper/getCurrentTime";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 
-const HomeScreen = ({ navigation }) => {
-    return (
-        <View style={{ flex: 1 }}>
-            <ScrollView style={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <Image
-                        source={face} // Placeholder for the header image
-                        style={styles.headerImage}
-                    />
-                </View>
+export default function HomeScreen({ navigation }) {
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
 
-                {/* Categories Section */}
-                <View style={styles.section}>
-                    <TouchableOpacity onPress={() => navigation.navigate(routers.OVERALL_ACTIVE)} style={[styles.membershipCard, { backgroundColor: '#FFE9E5' }]}>
-                        <Text style={styles.planTitle}>TỔNG QUAN PHÒNG</Text>
-                        <TouchableOpacity style={styles.tryNowButton}>
-                            <Text style={styles.tryNowButtonText}>XEM</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
+  const dispatch = useDispatch();
 
-                    <TouchableOpacity onPress={() => navigation.navigate(routers.LOGTIME_HISTORY)} style={[styles.membershipCard, { backgroundColor: '#E9FDE5' }]}>
-                        <Text style={styles.planTitle}>XEM LẠI LỊCH SỬ VÀO / RA</Text>
-                        <TouchableOpacity style={styles.tryNowButton}>
-                            <Text style={styles.tryNowButtonText}>XEM</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
+  const [schedules, setSchedules] = useState([]);
+  const [history, setHistory] = useState();
+  const [flag, setFlag] = useState(false);
 
-                    <TouchableOpacity onPress={() => navigation.navigate(routers.REGISTER_FACE)} style={[styles.membershipCard, { backgroundColor: '#c1ffd2' }]}>
-                        <Text style={styles.planTitle}>ĐĂNG KÍ THÔNG TIN</Text>
-                        <TouchableOpacity style={styles.tryNowButton}>
-                            <Text style={styles.tryNowButtonText}>ĐĂNG KÍ</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => navigation.navigate(routers.WELCOME)} style={[styles.membershipCard, { backgroundColor: '#FFE9E5' }]}>
-                        <Text style={styles.planTitle}>ĐĂNG KÍ KHUÔN MẶT</Text>
-                        <TouchableOpacity style={styles.tryNowButton}>
-                            <Text style={styles.tryNowButtonText}>ĐĂNG KÍ</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-
-                    
-
-                </View>
-
-                {/* Skin Type Section */}
-                {/* <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Skin Type</Text>
-                    <View style={styles.grid}>
-                        <TouchableOpacity style={styles.gridItem}>
-                            <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.iconImage} />
-                            <Text style={styles.gridText}>NORMAL</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.gridItem}>
-                            <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.iconImage} />
-                            <Text style={styles.gridText}>DRY</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.gridItem}>
-                            <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.iconImage} />
-                            <Text style={styles.gridText}>OILY</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.gridItem}>
-                            <Image source={{ uri: 'https://via.placeholder.com/50' }} style={styles.iconImage} />
-                            <Text style={styles.gridText}>COMBINE</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View> */}
-            </ScrollView>
-
-            {/* Bottom Navigation with Centered Floating Button */}
-            {/* <View style={styles.bottomNavContainer}>
-                <View style={styles.bottomNav}>
-                    <TouchableOpacity>
-                        <Image style={styles.navIcon} />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Image style={styles.navIcon} />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Image style={styles.navIcon} />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Image style={styles.navIcon} />
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={styles.floatingButton}>
-                    <Text style={styles.floatingButtonText}>+</Text>
-                </TouchableOpacity>
-            </View> */}
-        </View>
+  const getScheduleInTodayApi = async (teacherId, date) => {
+    const response = await axiosInstance.get(
+      `/schedule/teacher/${teacherId}/date/${date}`
     );
-};
 
-export default HomeScreen;
+    if (response?.data?.data) {
+      console.log("response?.data?.data : ", response?.data?.data);
+      const convertSchedule = response?.data?.data?.map((item) => {
+        return {
+          date: item?.date,
+          startTime: item?.startTime,
+          endTime: item?.endTime,
+          nameLab: item?.room?.nameLab,
+          scheduleId: item?.id,
+          labId: item?.room?.id,
+          hasCheckedIn: item?.hasCheckedIn,
+        };
+      });
+      setSchedules(convertSchedule);
+    }
+  };
+
+  const checkinApi = async (data) => {
+    const response = await axiosInstance.post(`/history/create-checkin`, data);
+    return response?.data;
+  };
+
+  const handleCheckinApi = async () => {
+    const response = await checkinApi({
+      lab: schedules[0]?.labId,
+      user: user?.id,
+      date: getCurrentDate(),
+      time: getCurrentTime(),
+      scheduleId: schedules[0]?.scheduleId,
+    });
+    console.log("🚀 ~ handleCheckinApi ~ response:", response);
+    if (!response?.data?.isSuccess) {
+      showMessage({
+        message: "Vào ca thất bại, vui lòng thử lại!",
+        type: "warning",
+      });
+      return;
+    } else {
+      setHistory(response?.data?.data?.id);
+      showMessage({
+        message: "Vào ca thành công, đừng quên ra ca nhé!",
+        type: "success",
+      });
+      setFlag(!flag);
+      await getScheduleInTodayApi();
+    }
+  };
+
+  // checkout
+  const checkoutApi = async (data) => {
+    const response = await axiosInstance.post(`/history/create-checkout`, data);
+    return response?.data;
+  };
+
+  const handleCheckoutApi = async () => {
+    const response = await checkoutApi({
+      lab: schedules[0]?.labId,
+      user: user?.id,
+      date: getCurrentDate(),
+      time: getCurrentTime(),
+      history,
+      scheduleId: schedules[0]?.scheduleId,
+    });
+    if (!response?.data?.isSuccess) {
+      showMessage({
+        message: "Ra ca thất bại, thử lại nhé!",
+        type: "warning",
+      });
+      return;
+    } else {
+      if (response?.data?.data?.isEarlyCheckout) {
+        showMessage({
+          message: response?.data?.message,
+          type: "warning",
+        });
+        setFlag(!flag);
+        return;
+      } else {
+        showMessage({
+          message: "Ra ca thành công!",
+          type: "success",
+        });
+      }
+      setFlag(!flag);
+      await getScheduleInTodayApi();
+    }
+  };
+
+  console.log("🚀 ~ HomeScreen ~ isLoggedIn:", isLoggedIn);
+  console.log("🚀 ~ HomeScreen ~ user:", user);
+
+  // Example data for schedule items
+  // const schedules = [
+  //   { date: "08 tháng 11, 2024", startTime: "08:00", endTime: "17:00" },
+  //   { date: "09 tháng 11, 2024", startTime: "08:00", endTime: "17:00" },
+  //   { date: "10 tháng 11, 2024", startTime: "08:00", endTime: "17:00" },
+  //   // Add more schedules as needed
+  // ];
+
+  let currentDate = getCurrentDate();
+
+  useEffect(() => {
+    getScheduleInTodayApi(user?.id, currentDate);
+  }, [currentDate, user?.id, flag]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      dispatch(logout());
+      navigation.reset({
+        index: 0,
+        routes: [{ name: routers.LOGIN }],
+      });
+    }
+  }, [isLoggedIn]);
+
+  console.log("schedules[0]?.room?.nameLab:", schedules);
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.header}>
+        <Icon
+          name="person-circle-outline"
+          size={28}
+          color="black"
+          style={styles.userIcon}
+        />
+        <Text style={styles.name}>{user?.userName}</Text>
+        <Icon
+          name="notifications-outline"
+          size={24}
+          color="black"
+          style={styles.notificationIcon}
+        />
+      </View>
+
+      {schedules?.length > 0 && (
+        <View style={styles.cir}>
+          <Text style={{ color: "gray", marginTop: -16, marginBottom: 8 }}>
+            {schedules[0]?.nameLab}
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              schedules[0]?.hasCheckedIn
+                ? handleCheckoutApi()
+                : handleCheckinApi()
+            }
+            style={styles.circleButton}
+          >
+            <Text style={styles.buttonTextCir}>
+              {schedules[0]?.hasCheckedIn ? `Ra ca` : `Vào ca`}
+            </Text>
+            <Text style={{ color: "white" }}>
+              {schedules[0]?.hasCheckedIn
+                ? ` ${schedules[0]?.endTime}`
+                : `${schedules[0]?.startTime}`}
+            </Text>
+            <Text style={{ color: "white" }}>{schedules[0]?.date}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <TouchableOpacity
+        onPress={() => setFlag(!flag)}
+        style={styles.refreshButton}
+      >
+        <Text style={styles.refreshText}>Làm mới</Text>
+      </TouchableOpacity>
+
+      <View style={styles.featureContainer}>
+        <FeatureButton icon="time-outline" title="Tăng ca" />
+        <FeatureButton icon="alert-outline" title="Report" />
+        <FeatureButton icon="document-text-outline" title="Pay slip" />
+        <FeatureButton icon="document-outline" title="Xin nghỉ phép" />
+      </View>
+
+      {/* Scrollable Schedule Section */}
+      <Text style={styles.sectionTitle}>Lịch làm việc hôm nay</Text>
+      <ScrollView style={styles.scheduleScrollContainer}>
+        {schedules?.length > 0 ? (
+          schedules.map((schedule, index) => (
+            <TouchableOpacity key={index} style={styles.scheduleContainer}>
+              <Text style={styles.scheduleDate}>{schedule.date}</Text>
+              <Text style={styles.scheduleDate}>{schedule.nameLab}</Text>
+              <View style={styles.scheduleDetails}>
+                <Icon name="log-in-outline" size={20} color="#1EB7B8" />
+                <Text>Vào ca</Text>
+                <Text style={styles.scheduleTime}>{schedule.startTime}</Text>
+              </View>
+              <View style={styles.scheduleDetails}>
+                <Icon name="log-out-outline" size={20} color="#1EB7B8" />
+                <Text>Tan ca</Text>
+                <Text style={styles.scheduleTime}>{schedule.endTime}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text>Không có lịch dạy nào hôm nay</Text>
+        )}
+      </ScrollView>
+    </ScrollView>
+  );
+}
+
+const FeatureButton = ({ icon, title }) => (
+  <TouchableOpacity style={styles.featureButton}>
+    <Icon name={icon} size={24} color="black" />
+    <Text>{title}</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#F5F5F5",
-    },
-    header: {
-        height: 200,
-        backgroundColor: '#FF7A44', // Solid color instead of gradient
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-        alignContent: "center"
-    },
-    headerImage: {
-        position: 'absolute',
-        width: '50%',
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        opacity: 0.8,
-        objectFit: "contain"
-    },
-    headerTitle: {
-        fontSize: 30,
-        fontWeight: 'bold',
-        color: "#FFF",
-    },
-    section: {
-        marginTop: 20,
-        paddingHorizontal: 20,
-        height: 360
-    },
-    membershipCard: {
-        width: '100%',
-        backgroundColor: '#FFF', // Change the background color for each card
-        borderRadius: 10,
-        padding: 20,
-        marginBottom: 20,
-        position: 'relative', // For the badge positioning
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        height: "40%",
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 2,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between"
-    },
-    planTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FF7A44', // Same color as in the header
-        marginBottom: 10,
-    },
-    planPrice: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: 20,
-    },
-    tryNowButton: {
-        backgroundColor: '#FF7A44', // Adjust button color
-        borderRadius: 5,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        alignItems: 'center',
-    },
-    tryNowButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    badge: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        backgroundColor: '#FFA17F', // Adjust badge color
-        borderRadius: 5,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-    },
-    badgeText: {
-        color: '#FFF',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    grid: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    gridItem: {
-        width: '45%',
-        height: 240,
-        borderRadius: 10,
-        backgroundColor: '#FFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 2,
-    },
-    gridText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#000',
-    },
-    iconImage: {
-        width: 100,
-        height: 100,
-        marginBottom: 5,
-    },
-    bottomNavContainer: {
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        alignItems: 'center',
-    },
-    bottomNav: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        padding: 10,
-        backgroundColor: '#FFF',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        width: '100%',
-    },
-    navIcon: {
-        width: 30,
-        height: 30,
-    },
-    floatingButton: {
-        position: 'absolute',
-        bottom: 35,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#FFA17F',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    floatingButtonText: {
-        fontSize: 36,
-        color: '#FFF',
-        lineHeight: 40,
-    },
+  cir: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  timeText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  circleButton: {
+    width: 130, // Diameter of the circle
+    height: 130,
+    borderRadius: 100, // Half of the width/height to make it circular
+    backgroundColor: "#1EB7B8", // Blue color similar to the example
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 5, // Shadow on Android
+    shadowColor: "#000", // Shadow color on iOS
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 5 },
+    marginBottom: 20,
+  },
+  buttonTextCir: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#EAF8F8",
+    padding: 16,
+    paddingTop: "10%",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 22,
+    paddingBottom: 10,
+    // borderBottomWidth: 0.3,
+    // borderColor: "gray",
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  userIcon: {
+    marginRight: 8, // Adds space between the icon and username
+  },
+  role: {
+    fontSize: 16,
+    color: "gray",
+  },
+  employeeCode: {
+    color: "red",
+    marginLeft: 5,
+  },
+  notificationIcon: {
+    marginLeft: "auto",
+  },
+  refreshButton: {
+    alignSelf: "center",
+    backgroundColor: "#1EB7B8",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  refreshText: {
+    color: "white",
+  },
+  featureContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  featureButton: {
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "48%",
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#333",
+  },
+  scheduleScrollContainer: {
+    // maxHeight: 300, // Set a fixed height for the scrollable schedule section
+  },
+  scheduleContainer: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 10,
+  },
+  scheduleTitle: {
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  scheduleDate: {
+    color: "gray",
+    marginBottom: 10,
+  },
+  scheduleDetails: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  scheduleTime: {
+    fontWeight: "bold",
+  },
 });

@@ -1,16 +1,16 @@
 // axiosConfig.js
-import axios from 'axios';
+import axios from "axios";
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3000', 
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: "http://192.168.1.66:3000",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // axiosInstance.interceptors.request.use(
 //     config => {
-//         const token = 'your_token_here'; 
+//         const token = 'your_token_here';
 //         if (token) {
 //             config.headers.Authorization = `Bearer ${token}`;
 //         }

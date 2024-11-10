@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Image, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native";
 import { routers } from "../navigate/routers";
-// Giả lập hình ảnh avatar (Thay bằng ảnh thật nếu có)
-import img_avatar from "../assets/images/img-login.png"; // Đặt đúng đường dẫn ảnh avatar của bạn
+import img_avatar from "../assets/images/img-login.png";
 import axiosInstance from "../config/axiosConfig";
 import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,24 +11,45 @@ import FlashMessage, { showMessage } from "react-native-flash-message";
 
 const LoginScreen = ({ navigation }) => {
   const { user, isLoggedIn } = useSelector((state) => state.auth);
-
-  useEffect(() => {
-    if (user && isLoggedIn) {
-      navigation.navigate(routers.HOME);
-    }
-  }, [isLoggedIn]);
-
-  const handleLogin = async (data) => {
-    const response = await axiosInstance.post("/auth/login", { ...data });
-    return response?.data;
-  };
-
+  const dispatch = useDispatch();
   const [infoLogin, setInfoLogin] = useState({
     userName: "",
     password: "",
   });
 
-  const dispatch = useDispatch();
+  useEffect(() => {
+    if (user && isLoggedIn) {
+      navigation.replace("Main"); // Ensure `routers.HOME` is correctly defined
+    }
+  }, [isLoggedIn, user]); // Add `user` to the dependency array for accurate tracking
+
+  const handleLogin = async (data) => {
+    try {
+      const response = await axiosInstance.post("/auth/login", { ...data });
+      return response?.data;
+    } catch (error) {
+      console.error("Login error:", error);
+      return null;
+    }
+  };
+
+  const onLoginPress = async () => {
+    const result = await handleLogin(infoLogin);
+    console.log("result", result);
+    if (!result?.isSuccess) {
+      showMessage({
+        message: "Đăng nhập thất bại!",
+        type: "warning",
+      });
+    } else {
+      showMessage({
+        message: "Đăng nhập thành công!",
+        type: "success",
+      });
+      dispatch(login(result?.data));
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Toast />
@@ -43,8 +63,8 @@ const LoginScreen = ({ navigation }) => {
       {/* Email */}
       <View style={styles.inputContainer}>
         <TextInput
-          onChange={(e) =>
-            setInfoLogin({ ...infoLogin, userName: e.target.value })
+          onChangeText={(text) =>
+            setInfoLogin({ ...infoLogin, userName: text })
           }
           style={styles.input}
           placeholder="Nhập tên"
@@ -55,8 +75,8 @@ const LoginScreen = ({ navigation }) => {
       {/* Mật khẩu */}
       <View style={styles.inputContainer}>
         <TextInput
-          onChange={(e) =>
-            setInfoLogin({ ...infoLogin, password: e.target.value })
+          onChangeText={(text) =>
+            setInfoLogin({ ...infoLogin, password: text })
           }
           style={styles.input}
           placeholder="Mật khẩu"
@@ -66,26 +86,7 @@ const LoginScreen = ({ navigation }) => {
       </View>
 
       {/* Nút Đăng nhập */}
-      <TouchableOpacity
-        style={styles.signInButton}
-        onPress={async () => {
-          const result = await handleLogin(infoLogin);
-          console.log("result", result);
-          if (!result?.isSuccess) {
-            showMessage({
-              message: "Đăng nhập thất bại!",
-              type: "warning",
-            });
-          } else {
-            showMessage({
-              message: "Đăng nhập thành công!",
-              type: "success",
-            });
-            dispatch(login(result?.data));
-            navigation.navigate(routers.HOME);
-          }
-        }}
-      >
+      <TouchableOpacity style={styles.signInButton} onPress={onLoginPress}>
         <Text style={styles.signInButtonText}>Đăng Nhập</Text>
       </TouchableOpacity>
 
@@ -110,20 +111,11 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F7F7FC",
+    backgroundColor: "#ffeef5",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 30,
-  },
-  closeButton: {
-    position: "absolute",
-    top: 40,
-    left: 20,
-  },
-  closeButtonText: {
-    fontSize: 18,
-    color: "#A6A6A6",
   },
   avatar: {
     width: 200,
@@ -139,10 +131,10 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: "100%",
-    backgroundColor: "#F1F1F1",
+    backgroundColor: "white",
     borderRadius: 10,
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingVertical: 18,
     marginBottom: 20,
     flexDirection: "row",
     alignItems: "center",
@@ -153,8 +145,8 @@ const styles = StyleSheet.create({
   },
   signInButton: {
     width: "100%",
-    backgroundColor: "#FF7A44",
-    paddingVertical: 15,
+    backgroundColor: "#1EB7B8",
+    paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
     marginBottom: 20,
