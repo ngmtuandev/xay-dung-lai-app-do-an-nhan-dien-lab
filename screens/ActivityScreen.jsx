@@ -14,6 +14,7 @@ import axiosInstance from "../config/axiosConfig";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import convertToVietnamTime from "../helper/convertTime";
 import { Loader } from "../component";
+import SelectDropdown from "react-native-select-dropdown";
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -30,6 +31,10 @@ export default function ActivityScreen() {
   const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
   const [listHistory, setListHistory] = useState([]);
   const [loader, setLoader] = useState(false);
+
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const data = ["Option 1", "Option 2", "Option 3", "Option 4"];
 
   const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
   useEffect(() => {
@@ -106,6 +111,19 @@ export default function ActivityScreen() {
               <Text>{endDate}</Text>
             </TouchableOpacity>
           </View>
+
+          <SelectDropdown
+            data={data}
+            onSelect={(selectedItem, index) => {
+              setSelectedItem(selectedItem);
+            }}
+            buttonTextAfterSelection={(selectedItem, index) => {
+              return selectedItem;
+            }}
+            rowTextForSelection={(item, index) => {
+              return item;
+            }}
+          />
 
           <ScrollView contentContainerStyle={styles.activityList}>
             {listHistory?.length > 0 &&

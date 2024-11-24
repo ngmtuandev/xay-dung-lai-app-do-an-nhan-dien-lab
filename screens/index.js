@@ -8,6 +8,7 @@ import OverallLabActive from "./OverallLabActive";
 import ScheduleScreen from "./ScheduleScreen";
 import ProfileScreen from "./ProfileScreen";
 import ActivityScreen from "./ActivityScreen";
+import HistoryRoomScreen from "./HistoryRoomScreen";
 
 export {
   HomeScreen,
@@ -20,4 +21,5 @@ export {
   ScheduleScreen,
   ActivityScreen,
   ProfileScreen,
+  HistoryRoomScreen,
 };

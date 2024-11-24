@@ -2,20 +2,18 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { routers } from "./routers";
 import {
   ActivityScreen,
   FaceRecognitionScreen,
+  HistoryRoomScreen,
   HomeScreen,
   LoginScreen,
   OverallLabActive,
-  PermissionsScreen,
   ProfileScreen,
-  RegisterInfoScreen,
   ScheduleScreen,
-  WelcomeScreen,
 } from "../screens";
 import LogtimeHistoryScreen from "../screens/LogtimeHistoryScreen";
 import FlashMessage from "react-native-flash-message";
@@ -49,7 +47,7 @@ function BottomTabNavigator() {
     >
       <Tab.Screen name={routers.HOME} component={HomeScreen} />
       <Tab.Screen name={routers.SCHEDULE} component={ScheduleScreen} />
-      <Tab.Screen name={routers.EMPLOYEE} component={HomeScreen} />
+      <Tab.Screen name={routers.EMPLOYEE} component={HistoryRoomScreen} />
       <Tab.Screen name={routers.ACTIVITY} component={ActivityScreen} />
       <Tab.Screen name={routers.ACCOUNT} component={ProfileScreen} />
     </Tab.Navigator>
@@ -107,7 +105,10 @@ export default function RootStack() {
             headerTitleStyle: styles.headerTitleStyle,
           }}
         />
-        {/* Add additional stack screens here if necessary */}
+        <Stack.Screen
+          name={routers.FACE_RECOGNIZE}
+          component={FaceRecognitionScreen}
+        ></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );

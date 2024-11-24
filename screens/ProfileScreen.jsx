@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Button } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { routers } from "../navigate/routers";
 import { useDispatch } from "react-redux";
@@ -31,7 +31,10 @@ export default function ProfileScreen({ navigation }) {
         <TouchableOpacity style={styles.optionItem}>
           <Text>Đổi mật khẩu</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.optionItem}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate(routers.FACE_RECOGNIZE)}
+          style={styles.optionItem}
+        >
           <Text>Đăng ký khuôn mặt</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.optionItem}>
