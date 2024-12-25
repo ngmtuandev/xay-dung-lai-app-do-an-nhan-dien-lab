@@ -3,6 +3,8 @@ import RootStack from "./navigate/mainRouter";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "./redux/store";
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
 
 export default function App() {
   return (

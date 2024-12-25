@@ -14,4 +14,6 @@ export const routers = {
   EMPLOYEE: "EMPLOYEE",
   ACCOUNT: "ACCOUNT",
   ACTIVITY: "ACTIVITY",
+  SHOW_ALL_ROOM: "SHOW_ALL_ROOM",
+  ANALYSIS: "ANALYSIS",
 };

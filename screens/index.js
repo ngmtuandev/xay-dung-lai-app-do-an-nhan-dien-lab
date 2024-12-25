@@ -9,9 +9,10 @@ import ScheduleScreen from "./ScheduleScreen";
 import ProfileScreen from "./ProfileScreen";
 import ActivityScreen from "./ActivityScreen";
 import HistoryRoomScreen from "./HistoryRoomScreen";
-
+import AnalysticScreen from "./AnalysticScreen";
 export {
   HomeScreen,
+  AnalysticScreen,
   LoginScreen,
   FaceRecognitionScreen,
   PermissionsScreen,

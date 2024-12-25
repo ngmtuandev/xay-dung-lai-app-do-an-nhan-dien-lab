@@ -2,19 +2,18 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Dimensions,
+  TouchableOpacity,
 } from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import Icon from "react-native-vector-icons/Ionicons";
-import getFirstAndLastDayOfMonth from "../helper/getFirstAndLastDayOfMonth";
 import { useSelector } from "react-redux";
 import axiosInstance from "../config/axiosConfig";
-import FlashMessage, { showMessage } from "react-native-flash-message";
-import convertToVietnamTime from "../helper/convertTime";
+import { showMessage } from "react-native-flash-message";
 import { Loader } from "../component";
+import getFirstAndLastDayOfMonth from "../helper/getFirstAndLastDayOfMonth";
 import SelectDropdown from "react-native-select-dropdown";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -23,14 +22,16 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function ActivityScreen() {
+const AnalysticScreen = () => {
+  const [listStats, setListStats] = useState([]);
+  const [loader, setLoader] = useState(false);
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isStartDatePickerVisible, setStartDatePickerVisibility] =
     useState(false);
   const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
   const [listHistory, setListHistory] = useState([]);
-  const [loader, setLoader] = useState(false);
 
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -59,22 +60,29 @@ export default function ActivityScreen() {
   const { user, isLoggedIn } = useSelector((state) => state.auth);
 
   // api
-  const getHistoryCheckinOfTeacher = async () => {
-    const response = await axiosInstance.get(
-      `/history/teacher-checkin-checkout-details?teacherId=${user?.id}&startDate=${startDate}&endDate=${endDate}`
-    );
-    console.log("🚀 ~  ~ response:", response);
-    if (response?.data?.isSuccess) {
+  const getLabStats = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/history/lab-checkin-counts?startDate=${startDate}&endDate=${endDate}`
+      );
+      if (response?.data?.isSuccess) {
+        showMessage({
+          message: "Lấy dữ liệu thống kê thành công!",
+          type: "success",
+        });
+        setListStats(response?.data?.data);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
       showMessage({
-        message: "Lấy danh sách lịch sử thành công!",
-        type: "success",
+        message: "Không thể lấy dữ liệu thống kê",
+        type: "danger",
       });
-      setListHistory(response?.data?.data);
     }
   };
 
   useEffect(() => {
-    getHistoryCheckinOfTeacher();
+    getLabStats();
   }, [startDate, endDate]);
 
   const showEndDatePicker = () => setEndDatePickerVisibility(true);
@@ -90,13 +98,20 @@ export default function ActivityScreen() {
     setEndDate(lastDay);
   }, []);
 
+  // Tính tổng số lần checkin
+  const totalCheckins = listStats.reduce(
+    (sum, item) => sum + item.checkinCount,
+    0
+  );
+
   return (
     <>
       {loader ? (
-        <Loader></Loader>
+        <Loader />
       ) : (
-        <View style={styles.container}>
-          <Text style={styles.header}>Hoạt động</Text>
+        <ScrollView style={styles.container}>
+          <Text style={styles.header}>Thống kê sử dụng phòng Lab</Text>
+
           <View style={styles.datePickerContainer}>
             <TouchableOpacity
               onPress={showStartDatePicker}
@@ -125,48 +140,45 @@ export default function ActivityScreen() {
             }}
           />
 
-          <ScrollView contentContainerStyle={styles.activityList}>
-            {listHistory?.length > 0 &&
-              listHistory?.map((item, index) => (
-                <View key={index} style={styles.activityItem}>
-                  <Text style={styles.activityDate}>{item?.date}</Text>
-                  <Text style={styles.activityDate}>{item?.lab}</Text>
-                  <View style={styles.activityDetails}>
-                    <Icon name="log-in-outline" size={20} color="#1EB7B8" />
-                    <Text>Vào ca</Text>
-                    <Text style={styles.activityTime}>
-                      {convertToVietnamTime(item?.checkinTime)}
-                    </Text>
-                    {item?.isLateCheckin ? (
-                      <Text style={[styles.status, { color: "red" }]}>
-                        Vào trễ ({item?.lateCheckinMinutes} phút)
-                      </Text>
-                    ) : (
-                      <Text style={[styles.status, { color: "green" }]}>
-                        Đúng giờ
-                      </Text>
-                    )}
+          {/* Tổng số lần checkin */}
+          <View style={styles.totalCard}>
+            <Text style={styles.totalTitle}>Tổng số lần check-in</Text>
+            <Text style={styles.totalNumber}>{totalCheckins}</Text>
+          </View>
+
+          {/* Danh sách thống kê theo phòng */}
+          <View style={styles.statsContainer}>
+            {listStats.map((item, index) => {
+              // Tính phần trăm
+              const percentage = (
+                (item.checkinCount / totalCheckins) *
+                100
+              ).toFixed(1);
+
+              return (
+                <View key={index} style={styles.statCard}>
+                  <View style={styles.labInfo}>
+                    <Text style={styles.labName}>{item.labName}</Text>
+                    <Text style={styles.labId}>Mã phòng: {item.labId}</Text>
                   </View>
-                  <View style={styles.activityDetails}>
-                    <Icon name="log-out-outline" size={20} color="#1EB7B8" />
-                    <Text>Tan ca</Text>
-                    <Text style={styles.activityTime}>
-                      {convertToVietnamTime(item?.checkoutTime)}
+
+                  <View style={styles.statsInfo}>
+                    <Text style={styles.checkinCount}>
+                      {item.checkinCount} lần check-in
                     </Text>
-                    {item?.isEarlyCheckout ? (
-                      <Text style={[styles.status, { color: "red" }]}>
-                        Ra sớm ({item?.earlyCheckoutMinutes} phút)
-                      </Text>
-                    ) : (
-                      <Text style={[styles.status, { color: "green" }]}>
-                        Đúng giờ
-                      </Text>
-                    )}
+                    <Text style={styles.percentage}>{percentage}%</Text>
+                  </View>
+
+                  {/* Progress bar */}
+                  <View style={styles.progressBarContainer}>
+                    <View
+                      style={[styles.progressBar, { width: `${percentage}%` }]}
+                    />
                   </View>
                 </View>
-              ))}
-          </ScrollView>
-
+              );
+            })}
+          </View>
           <DateTimePickerModal
             isVisible={isStartDatePickerVisible}
             mode="date"
@@ -179,24 +191,17 @@ export default function ActivityScreen() {
             onConfirm={handleEndDateConfirm}
             onCancel={hideEndDatePicker}
           />
-        </View>
+        </ScrollView>
       )}
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F7F7FC",
     padding: 16,
-    paddingTop: "7%",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
   },
   datePickerContainer: {
     flexDirection: "row",
@@ -229,5 +234,94 @@ const styles = StyleSheet.create({
     flex: 1, // Căn chỉnh thời gian và status sao cho không bị chèn vào nhau
     textAlign: "center",
   },
-  status: { fontWeight: "bold", flex: 1, textAlign: "right" },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginVertical: 20,
+    color: "#333",
+  },
+  totalCard: {
+    backgroundColor: "#1EB7B8",
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  totalTitle: {
+    color: "white",
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  totalNumber: {
+    color: "white",
+    fontSize: 36,
+    fontWeight: "bold",
+  },
+  statsContainer: {
+    marginBottom: 20,
+  },
+  statCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+  },
+  labInfo: {
+    marginBottom: 10,
+  },
+  labName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  labId: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 4,
+  },
+  statsInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  checkinCount: {
+    fontSize: 15,
+    color: "#444",
+  },
+  percentage: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#1EB7B8",
+  },
+  progressBarContainer: {
+    height: 6,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#1EB7B8",
+    borderRadius: 3,
+  },
 });
+
+export default AnalysticScreen;

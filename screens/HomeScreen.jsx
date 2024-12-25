@@ -188,44 +188,64 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
-      <TouchableOpacity
-        onPress={() => setFlag(!flag)}
-        style={styles.refreshButton}
-      >
-        <Text style={styles.refreshText}>Làm mới</Text>
-      </TouchableOpacity>
+      {/* refresh button */}
+      {user?.role === "EMPLOYEE" && (
+        <TouchableOpacity
+          onPress={() => setFlag(!flag)}
+          style={styles.refreshButton}
+        >
+          <Text style={styles.refreshText}>Làm mới</Text>
+        </TouchableOpacity>
+      )}
 
-      <View style={styles.featureContainer}>
-        <FeatureButton icon="time-outline" title="Tăng ca" />
-        <FeatureButton icon="alert-outline" title="Report" />
-        <FeatureButton icon="document-text-outline" title="Pay slip" />
-        <FeatureButton icon="document-outline" title="Xin nghỉ phép" />
-      </View>
+      {/* feature button */}
+      {
+        <View style={styles.featureContainer}>
+          <FeatureButton icon="time-outline" title="Tăng ca" />
+          <FeatureButton icon="alert-outline" title="Report" />
+          <FeatureButton icon="document-text-outline" title="Pay slip" />
+          <FeatureButton icon="document-outline" title="Xin nghỉ phép" />
+        </View>
+      }
 
-      {/* Scrollable Schedule Section */}
-      <Text style={styles.sectionTitle}>Lịch làm việc hôm nay</Text>
-      <ScrollView style={styles.scheduleScrollContainer}>
-        {schedules?.length > 0 ? (
-          schedules.map((schedule, index) => (
-            <TouchableOpacity key={index} style={styles.scheduleContainer}>
-              <Text style={styles.scheduleDate}>{schedule.date}</Text>
-              <Text style={styles.scheduleDate}>{schedule.nameLab}</Text>
-              <View style={styles.scheduleDetails}>
-                <Icon name="log-in-outline" size={20} color="#1EB7B8" />
-                <Text>Vào ca</Text>
-                <Text style={styles.scheduleTime}>{schedule.startTime}</Text>
-              </View>
-              <View style={styles.scheduleDetails}>
-                <Icon name="log-out-outline" size={20} color="#1EB7B8" />
-                <Text>Tan ca</Text>
-                <Text style={styles.scheduleTime}>{schedule.endTime}</Text>
-              </View>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <Text>Không có lịch dạy nào hôm nay</Text>
-        )}
-      </ScrollView>
+      {/* scrollable schedule section */}
+      {user?.role === "EMPLOYEE" && (
+        <>
+          {/* Scrollable Schedule Section */}
+          <Text style={styles.sectionTitle}>Lịch làm việc hôm nay</Text>
+          <ScrollView style={styles.scheduleScrollContainer}>
+            {schedules?.length > 0 ? (
+              schedules.map((schedule, index) => (
+                <TouchableOpacity key={index} style={styles.scheduleContainer}>
+                  <Text style={styles.scheduleDate}>{schedule.date}</Text>
+                  <Text style={styles.scheduleDate}>{schedule.nameLab}</Text>
+                  <View style={styles.scheduleDetails}>
+                    <Icon name="log-in-outline" size={20} color="#1EB7B8" />
+                    <Text>Vào ca</Text>
+                    <Text style={styles.scheduleTime}>
+                      {schedule.startTime}
+                    </Text>
+                  </View>
+                  <View style={styles.scheduleDetails}>
+                    <Icon name="log-out-outline" size={20} color="#1EB7B8" />
+                    <Text>Tan ca</Text>
+                    <Text style={styles.scheduleTime}>{schedule.endTime}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text>Không có lịch dạy nào hôm nay</Text>
+            )}
+          </ScrollView>
+        </>
+      )}
+
+      {/* admin */}
+      {user?.role === "ADMIN" && (
+        <View>
+          <Text>Admin</Text>
+        </View>
+      )}
     </ScrollView>
   );
 }

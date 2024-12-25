@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -7,6 +7,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { routers } from "./routers";
 import {
   ActivityScreen,
+  AnalysticScreen,
   FaceRecognitionScreen,
   HistoryRoomScreen,
   HomeScreen,
@@ -17,11 +18,80 @@ import {
 } from "../screens";
 import LogtimeHistoryScreen from "../screens/LogtimeHistoryScreen";
 import FlashMessage from "react-native-flash-message";
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+import ShowAllRoomScreen from "../screens/ShowAllRoomScreen";
+import { useSelector } from "react-redux";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+async function requestPermissions() {
+  const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+  if (status !== "granted") {
+    alert("Bạn cần cấp quyền thông báo để nhận thông báo!");
+  }
+}
+
 function BottomTabNavigator() {
+  useEffect(() => {
+    requestPermissions();
+  }, []);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log("Thông báo nhận được:", notification);
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      console.log("find notify");
+      try {
+        const response = await fetch(
+          "http://192.168.1.5:3000/notify/get-and-mark-as-read?userId=10"
+        );
+        const data = await response.json();
+
+        if (
+          data &&
+          data.isSuccess &&
+          Array.isArray(data.data) &&
+          data.data.length > 0
+        ) {
+          console.log("Notification data:", data.data[0]);
+
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: data.data[0].title || "Thông báo mới",
+              body: "Bạn có một thông báo mới về hoạt động của mình.",
+              sound: true,
+            },
+            trigger: null,
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi kiểm tra thông báo:", error);
+      }
+    }, 100000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
+  console.log("user : ", user?.role);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -38,6 +108,8 @@ function BottomTabNavigator() {
             iconName = focused ? "sync" : "sync-outline";
           } else if (route.name === routers.ACCOUNT) {
             iconName = focused ? "person" : "person-outline";
+          } else if (route.name === routers.ANALYSIS) {
+            iconName = focused ? "stats-chart" : "stats-chart-outline";
           }
           return <Icon name={iconName} size={size} color={color} />;
         },
@@ -49,6 +121,10 @@ function BottomTabNavigator() {
       <Tab.Screen name={routers.SCHEDULE} component={ScheduleScreen} />
       <Tab.Screen name={routers.EMPLOYEE} component={HistoryRoomScreen} />
       <Tab.Screen name={routers.ACTIVITY} component={ActivityScreen} />
+      {user?.role === "ADMIN" && (
+        <Tab.Screen name={routers.ANALYSIS} component={AnalysticScreen} />
+      )}
+
       <Tab.Screen name={routers.ACCOUNT} component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -108,6 +184,10 @@ export default function RootStack() {
         <Stack.Screen
           name={routers.FACE_RECOGNIZE}
           component={FaceRecognitionScreen}
+        ></Stack.Screen>
+        <Stack.Screen
+          name={routers.SHOW_ALL_ROOM}
+          component={ShowAllRoomScreen}
         ></Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>

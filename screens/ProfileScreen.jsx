@@ -2,11 +2,12 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Button } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { routers } from "../navigate/routers";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/authSlice";
 
 export default function ProfileScreen({ navigation }) {
   const dispatch = useDispatch();
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     // Reset the stack and navigate to the login screen
@@ -23,8 +24,10 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.profileInfo}>
         <Icon name="person-circle-outline" size={50} color="black" />
         <View style={styles.profileText}>
-          <Text style={styles.profileName}>NGUYỄN MẠNH TUẤN</Text>
-          <Text style={styles.profileRole}>NV</Text>
+          <Text style={styles.profileName}>{user && user?.userName}</Text>
+          <Text style={styles.profileRole}>
+            {user && user?.role === "EMPLOYEE" ? "NV" : "ADMIN"}
+          </Text>
         </View>
       </View>
       <View style={styles.optionsContainer}>
@@ -40,8 +43,17 @@ export default function ProfileScreen({ navigation }) {
         <TouchableOpacity style={styles.optionItem}>
           <Text>Hướng dẫn sử dụng</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.optionItem}>
-          <Text>Liên hệ</Text>
+        <TouchableOpacity
+          style={styles.optionItem}
+          onPress={() => navigation.navigate(routers.SHOW_ALL_ROOM)}
+        >
+          <Text>Kiểm tra phòng</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.optionItem}
+          onPress={() => navigation.navigate(routers.ANALYSIS)}
+        >
+          <Text>Phân tích</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>

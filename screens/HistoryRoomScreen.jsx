@@ -8,6 +8,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import convertToVietnamTime from "../helper/convertTime";
 import formatDate from "../helper/formatDate";
 import { Loader } from "../component";
+import { useSelector } from "react-redux";
 
 export default function HistoryRoomScreen() {
   const [rooms, setRooms] = useState([]);
@@ -15,6 +16,10 @@ export default function HistoryRoomScreen() {
   const [historyOfRoom, setHistoryOfRoom] = useState([]);
   const [loader, setLoader] = useState(false);
 
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
+
+  console.log("user : ", user);
+  console.log("isLoggedIn : ", user?.role);
   const getAllLabRoom = async () => {
     const response = await axiosInstance.post("/lab/find-all");
     console.log("response : ", response?.data);
@@ -36,7 +41,9 @@ export default function HistoryRoomScreen() {
     const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
     setLoader(true);
     const response = await axiosInstance.get(
-      `/history/lab-details?labId=${selectedValue}&startDate=${firstDay}&endDate=${lastDay}`
+      `/history/lab-details?labId=${selectedValue}&startDate=${firstDay}&endDate=${lastDay}&userId=${
+        user?.role === "EMPLOYEE" ? user?.id : ""
+      }`
     );
     if (response?.data?.isSuccess) {
       setLoader(false);
@@ -82,8 +89,14 @@ export default function HistoryRoomScreen() {
               }
             >
               {rooms &&
-                rooms?.map((item) => {
-                  return <Picker.Item label={item?.nameLab} value={item?.id} />;
+                rooms?.map((item, index) => {
+                  return (
+                    <Picker.Item
+                      key={index}
+                      label={item?.nameLab}
+                      value={item?.id}
+                    />
+                  );
                 })}
             </Picker>
           </View>
