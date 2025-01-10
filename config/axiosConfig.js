@@ -3,7 +3,7 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   // baseURL: "http://192.168.1.5:3000",
-  baseURL: "https://lab-manager-backend-production.up.railway.app",
+  baseURL: "https://tesst-production.up.railway.app",
   headers: {
     "Content-Type": "application/json",
   },

@@ -53,7 +53,7 @@ export default function FaceRecognitionScreen({ navigation }) {
 
       // Gửi ảnh lên API
       const response = await axios.post(
-        "https://lab-manager-backend-production.up.railway.app/auth/upload",
+        "https://tesst-production.up.railway.app/auth/upload",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -87,7 +87,7 @@ export default function FaceRecognitionScreen({ navigation }) {
       });
       (async () => {
         const response = await axios.post(
-          "https://lab-manager-backend-production.up.railway.app/user/update-image",
+          "https://tesst-production.up.railway.app/user/update-image",
           {
             images: capturedImages,
             id: user?.id,

@@ -62,7 +62,7 @@ function BottomTabNavigator() {
       console.log("find notify");
       try {
         const response = await fetch(
-          `https://lab-manager-backend-production.up.railway.app/notify/get-and-mark-as-read?userId=${user.id}`
+          `https://tesst-production.up.railway.app/notify/get-and-mark-as-read?userId=${user.id}`
         );
 
         // const response = await axiosInstance.get(
