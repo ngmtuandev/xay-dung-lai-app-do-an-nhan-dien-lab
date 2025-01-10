@@ -10,7 +10,6 @@ export default function FaceRecognitionScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [capturedImages, setCapturedImages] = useState([]);
   const cameraRef = useRef(null);
-  const MAX_IMAGES = 2; // Số lượng ảnh cần chụp
 
   useEffect(() => {
     // Yêu cầu quyền truy cập camera trên thiết bị di động
@@ -22,7 +21,7 @@ export default function FaceRecognitionScreen({ navigation }) {
 
   // Hàm chụp ảnh và upload ảnh
   const takePictureAndUpload = async () => {
-    if (capturedImages.length >= MAX_IMAGES) {
+    if (capturedImages.length >= 12) {
       console.log("Đã chụp đủ ảnh.", capturedImages);
       return;
     }
@@ -81,7 +80,7 @@ export default function FaceRecognitionScreen({ navigation }) {
   useEffect(() => {
     console.log("capture ================== ", capturedImages);
     // Theo dõi danh sách ảnh cập nhật
-    if (capturedImages.length >= MAX_IMAGES) {
+    if (capturedImages.length >= 12) {
       showMessage({
         message: "Chụp đủ ảnh, chuẩn bị gửi!",
         type: "success",
@@ -112,7 +111,7 @@ export default function FaceRecognitionScreen({ navigation }) {
   const startCaptureProcess = () => {
     let captureCount = 0; // Đếm số lượng ảnh đã chụp
     const interval = setInterval(async () => {
-      if (captureCount >= MAX_IMAGES) {
+      if (captureCount >= 12) {
         clearInterval(interval); // Dừng quá trình chụp
       } else {
         await takePictureAndUpload();

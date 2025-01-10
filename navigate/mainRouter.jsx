@@ -56,13 +56,18 @@ function BottomTabNavigator() {
     return () => subscription.remove();
   }, []);
 
+  const { user, isLoggedIn } = useSelector((state) => state.auth);
   useEffect(() => {
     const interval = setInterval(async () => {
       console.log("find notify");
       try {
         const response = await fetch(
-          "http://192.168.1.5:3000/notify/get-and-mark-as-read?userId=10"
+          `https://lab-manager-backend-production.up.railway.app/notify/get-and-mark-as-read?userId=${user.id}`
         );
+
+        // const response = await axiosInstance.get(
+        //   `/notify/get-and-mark-as-read?userId=${user.id}`
+        // );
         const data = await response.json();
 
         if (
@@ -85,12 +90,11 @@ function BottomTabNavigator() {
       } catch (error) {
         console.error("Lỗi khi kiểm tra thông báo:", error);
       }
-    }, 100000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const { user, isLoggedIn } = useSelector((state) => state.auth);
   console.log("user : ", user?.role);
   return (
     <Tab.Navigator

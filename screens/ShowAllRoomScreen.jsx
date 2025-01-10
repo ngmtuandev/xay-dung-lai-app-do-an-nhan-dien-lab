@@ -64,7 +64,7 @@ export default function ShowAllRoomScreen({ navigation }) {
 
               <View
                 style={{
-                  width: "100px",
+                  width: "500px",
                   minHeightheight: 200,
                   backgroundColor: "#dcdcdc",
                   borderRadius: 10,
